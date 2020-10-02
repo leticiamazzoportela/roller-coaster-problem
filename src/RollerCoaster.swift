@@ -1,6 +1,6 @@
 //
 //  RollerCoaster.swift
-//
+//  teste
 //
 //  Created by Leticia Portela on 22/09/20.
 //  Copyright © 2020 Leticia Portela. All rights reserved.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-class RollerCoaster {
+class Cart {
     let totalPassengers = 5
     let carCapacity = 4
     private var availableSeats: Int = 4
@@ -21,13 +21,11 @@ class RollerCoaster {
     }
 
     func passengerTriesToGetInCar(passengerId: Int) {
-//        self.passengerQueue.async {
-            if !self.carIsFull() && !self.rollerCoasterWorking {
-                print("The Passenger \(passengerId) gets in the car")
-                self.availableSeats -= 1
-                self.carSemaphore.wait()
-            }
-//        }
+        if !self.carIsFull() {
+            print("The Passenger \(passengerId) gets in the car")
+            self.availableSeats -= 1
+            self.carSemaphore.wait()
+        }
     }
 
     func carIsRunning() -> Bool {
@@ -42,28 +40,26 @@ class RollerCoaster {
     func passengerLeftTheCar() {
         self.rollerCoasterWorking = false
 
-//        self.passengerQueue.async {
-            print("\nThe tour is over, the passengers can be released...\n")
+        print("\nThe tour is over, the passengers can be released...\n")
 
-            while self.availableSeats != self.carCapacity {
-                print("The passengers are getting of..")
-                self.availableSeats += 1
-                self.carSemaphore.signal()
-            }
-//        }
+        while self.availableSeats != self.carCapacity {
+            print("The passengers are getting of..")
+            self.availableSeats += 1
+            self.carSemaphore.signal()
+        }
     }
 
-    func initRollerCoaster() {
+    func initCart() {
         while true {
             for i in 0..<self.totalPassengers {
                 DispatchQueue(label: "passenger-queue-\(i)", attributes: .concurrent).async {
                     self.passengerTriesToGetInCar(passengerId: i)
-                    sleep(2)
                 }
+                sleep(2)
             }
 
             if self.carIsRunning() {
-                print("\nThe car is running...\n")
+                print("\nThe car is running...uiiiiii\n")
             }
 
             sleep(5)
