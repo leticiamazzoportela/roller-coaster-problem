@@ -8,62 +8,63 @@
 
 import Foundation
 
-class Cart {
-    let totalPassengers = 5
-    let carCapacity = 4
-    private var availableSeats: Int = 4
-    private var rollerCoasterWorking: Bool = false
-    private let passengerQueue = DispatchQueue(label: "passenger-queue", attributes: .concurrent)
-    private let carSemaphore = DispatchSemaphore(value: 4)
+class RollerCoaster {
+    let totalPassengers = 5 // Number of people in the park
+    let cartCapacity = 4 // Capacity of the cart
+    private var availableSeats: Int = 4 // Number of available seats in the cart
+    private let cartSemaphore = DispatchSemaphore(value: 4) // Semaphore to control passengers in the cart
 
-    func carIsFull() -> Bool {
+
+    // Verify if the cart is full
+    func cartIsFull() -> Bool {
         return self.availableSeats == 0
     }
 
-    func passengerTriesToGetInCar(passengerId: Int) {
-        if !self.carIsFull() {
-            print("The Passenger \(passengerId) gets in the car")
+    // If the cart not is full, the passenger gets in the car
+    func passengerTriesToGetInCart(passengerId: Int) {
+        if !self.cartIsFull() {
+            print("The Passenger \(passengerId) gets in the cart")
             self.availableSeats -= 1
-            self.carSemaphore.wait()
+            self.cartSemaphore.wait() // The resource is required, a passenger gets in the car
         }
     }
 
-    func carIsRunning() -> Bool {
-        if carIsFull() {
-            self.rollerCoasterWorking = true
+    // Verify if the cart is running
+    func cartIsRunning() -> Bool {
+        if cartIsFull() {
             return true
         }
 
         return false
     }
 
-    func passengerLeftTheCar() {
-        self.rollerCoasterWorking = false
+    // Removes passenger of the cart and release the seats
+    func passengerLeftTheCart() {
+        print("The tour is over, the passengers can be released...\n")
 
-        print("\nThe tour is over, the passengers can be released...\n")
-
-        while self.availableSeats != self.carCapacity {
-            print("The passengers are getting of..")
+        while self.availableSeats != self.cartCapacity {
             self.availableSeats += 1
-            self.carSemaphore.signal()
+            self.cartSemaphore.signal() // The resource can be released, a passenger can be released of the cart
         }
     }
 
-    func initCart() {
+    // Init The Roller Coaster
+    func initRollerCoaster() {
         while true {
             for i in 0..<self.totalPassengers {
+                // Create a thread for each passenger and each passenger tries to get in the cart
                 DispatchQueue(label: "passenger-queue-\(i)", attributes: .concurrent).async {
-                    self.passengerTriesToGetInCar(passengerId: i)
+                    self.passengerTriesToGetInCart(passengerId: i)
                 }
                 sleep(2)
             }
 
-            if self.carIsRunning() {
-                print("\nThe car is running...uiiiiii\n")
+            if self.cartIsRunning() {
+                print("\nThe cart is running...uiiiiii\n")
             }
 
             sleep(5)
-            self.passengerLeftTheCar()
+            self.passengerLeftTheCart()
 
         }
     }
