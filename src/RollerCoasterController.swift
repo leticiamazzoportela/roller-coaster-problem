@@ -1,74 +1,100 @@
+//
+//  RollerCoaster.swift
+//  teste
+//
+//  Created by Leticia Portela on 22/09/20.
+//  Copyright © 2020 Leticia Portela. All rights reserved.
+//
+
 import Foundation
 
-class RollerCoasterController {
-    private var availableSets: Int = 0
-    private let carCapacity: Int
-    private var rollerCoasterWorking: Bool = false
-    private var passengersRiding: Bool = true
-    private let carQueue = DispatchQueue(label: "car-queue", attributes: .concurrent)
-    private let passengerQueue = DispatchQueue(label: "passenger-queue", attributes: .concurrent)
+class Cart {
+    let carCapacity = 4
+    private var availableSeats: Int = 4
     private let carSemaphore = DispatchSemaphore(value: 4)
-    private let passengerSemaphore = DispatchSemaphore(value: 1)
+    var totalPassengers: Int
+    var carId: String
 
-    public init(carCapacity: Int) {
-        self.carCapacity = carCapacity
+    init(totalPassengers: Int, carId: String) {
+        self.totalPassengers = totalPassengers
+        self.carId = carId
     }
 
     func carIsFull() -> Bool {
-        if (!passengersRiding && availableSets > 0 && (availableSets <= self.carCapacity)) {
-            availableSets -= 1
-            return true
-        }
-
-        return false
+        return self.availableSeats == 0
     }
 
     func passengerTriesToGetInCar(passengerId: Int) {
-        _ = passengerQueue.sync {
-            while (!carIsFull()) {
-                passengerSemaphore.wait()
-            }
-        }
-
-        print("The Passenger \(passengerId) gets in car")
-
-        _ = carQueue.sync {
-            carSemaphore.signal()
+        if !self.carIsFull() {
+            print("The Passenger \(passengerId) gets in the car \(self.carId)")
+            self.availableSeats -= 1
+            self.carSemaphore.wait()
         }
     }
 
     func carIsRunning() -> Bool {
-        if (availableSets == 0) {
-            availableSets = self.carCapacity
-            rollerCoasterWorking = true
-            passengersRiding = true
+        if carIsFull() {
             return true
         }
 
         return false
     }
 
-    func passengerGetOnCar(carId: Int) {
-        _ = carQueue.sync {
-            while (!carIsRunning()) {
-                carSemaphore.wait()
+    func passengerLeftTheCar() {
+        print("\nThe tour is over, the passengers can be released of the car \(self.carId)...\n")
+
+        while self.availableSeats != self.carCapacity {
+            self.availableSeats += 1
+            self.carSemaphore.signal()
+        }
+    }
+}
+
+class RollerCoaster {
+    var totalCarts: Int
+    private var rollerCoasterWorking: Bool = false
+    var totalPassengers: Int
+
+    init(totalPassengers: Int, totalCarts: Int) {
+        self.totalPassengers = totalPassengers
+        self.totalCarts = totalCarts
+    }
+
+    func initRollerCoaster() {
+        var carts: [Cart] = []
+
+        while true {
+            for i in 0..<self.totalCarts - 1 {
+                carts.append(Cart(totalPassengers: self.totalPassengers, carId: "Car\(i)"))
+
+                for j in 0..<self.totalPassengers {
+                    DispatchQueue(label: "passenger-queue-\(j)", attributes: .concurrent).async {
+                        carts[i].passengerTriesToGetInCar(passengerId: j)
+                    }
+                    sleep(2)
+                }
+
+                if carts[i].carIsRunning() {
+                    print("\nThe car \(carts[i].carId) is running...uiiiiii\n")
+                }
+
+                sleep(5)
+                carts[i].passengerLeftTheCar()
             }
         }
-
-        print("The car is full and starts running")
-
-        _ = passengerQueue.sync {
-            passengerSemaphore.signal()
-        }
     }
+}
 
-    func passengerLeftTheCar(carId: Int) {
-        passengersRiding = false
-        rollerCoasterWorking = false
+class Main {
+    let totalPassengers = 5
+    let totalCarts = 4
 
-        _ = passengerQueue.sync {
-            passengerSemaphore.signal()
-        }
+    func main() {
+        print("_____Initializing The Roller Coaster_____")
+
+        RollerCoaster(
+            totalPassengers: totalPassengers,
+            totalCarts: totalCarts
+        ).initRollerCoaster()
     }
-
 }
