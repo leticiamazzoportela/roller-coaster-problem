@@ -17,6 +17,10 @@ Sendo assim, sabe-se o seguinte:
 
 A implementação feita em Swift usa um semáforo para o carrinho, o qual é limitado por uma determinada quantidade de threads. Para cada passageiro do parque é disparada uma thread, e quando os assentos disponíveis do carrinho esgotam, o carrinho começa a andar. Após um certo tempo, os passageiros são liberados do carrinho.
 
+Caso a quantidade de passageiros querendo andar no carrinho seja superior à capacidade do carrinho, esses passageiros vão para uma fila de espera, então, caso o limite de voltas por dia do carrinho não tenha sido atingido e, além disso, o número de passageiros na fila seja igual ou superior à capacidade do carrinho, então o carrinho iniciará uma nova volta.
+
+A quantidade de passageiros no parque é gerada de forma aleatória toda vez que a montanha-russa inicia sua operação.
+
 ### Instruções de execução
 
 O código pode ser executado pelo Xcode, através da criação de um playground. Caso não haja um mac para usar o Xcode, o código pode ser executado pelo site <https://repl.it/languages/swift>. Basta colocar o código lá e, após fechar a classe, instanciá-la da seguinte forma:
